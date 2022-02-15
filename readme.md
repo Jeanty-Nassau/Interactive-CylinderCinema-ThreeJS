@@ -1,5 +1,4 @@
-# Three.js Starter
-Courtesy of Bruno Simon of https://threejs-journey.xyz/
+# Three JS cinema using a cylinder geometry and images mapped to it
 
 ## Setup
 Download [Node.js](https://nodejs.org/en/download/).
