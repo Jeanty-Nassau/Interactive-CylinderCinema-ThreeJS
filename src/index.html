@@ -1,47 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Signal Theatre — a rotating four-screen Three.js cinema using the original project media.">
+  <title>Signal Theatre — Rotating Cinema</title>
+</head>
+<body>
+  <main class="study-shell">
+    <section class="study-copy">
+      <p class="eyebrow">THREE.JS STUDY / 02</p>
+      <h1>Signal <span>Theatre</span></h1>
+      <p>A rotating four-screen cinema built from the original media assets, curved geometry, a textured reflective floor, and a viewer positioned in the middle of the room.</p>
+      <p class="hint">Move screen to screen · Zoom in or out.</p>
+    </section>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Signal Theatre — Three.js Study</title>
-    </head>
+    <div id="canvasContainer">
+      <canvas class="webgl" aria-label="Interactive rotating cylindrical cinema"></canvas>
+    </div>
 
-    <body>
-        <section class="section1">
-            <div class="hero_left">
-                <h1>Signal Theatre</h1>
-                <P>Millions of developers and companies build, ship, and maintain their software
-                    on GitHub-the largest and most advanced development platform.
-                </P>
-                <div class="hero_button">
-                    <a href="">Learn More</a>
-                </div>
-            </div>
-        </section>
-        <section class="section2">
-            <p>section 2</p>
-        </section>
-        <section class="section3">
-            <p>section 3</p>
-        </section>
-        <section class="section4">
-            <p>section 4</p>
-        </section>
+    <aside class="controls-panel" aria-label="Cinema controls">
+      <button type="button" data-prev-screen>← Prev</button>
+      <strong data-screen-label>Building</strong>
+      <button type="button" data-next-screen>Next →</button>
+      <span class="divider" aria-hidden="true"></span>
+      <button type="button" data-zoom-in>Zoom +</button>
+      <button type="button" data-zoom-out>Zoom −</button>
+    </aside>
 
-
-
-
-        <video loop id="video1" src="../static/castleGif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video>
-        <video loop id="video2" src="../static/houseGif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video>
-        <video loop id="video3" src="../static/sky2Gif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video>
-        <!-- <video loop id="video4" src="../static/castleGif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video> -->
-        <canvas class="webgl"></canvas>
-    <aside class="study-note" aria-label="About this study"><strong>Signal Theatre</strong><span>A spatial media study exploring curved geometry, video textures, reflection and scroll-driven camera choreography.</span></aside>
+    <video id="video1" src="../static/castleGif.mp4" crossorigin="anonymous" playsinline preload="auto" muted loop hidden></video>
+    <video id="video2" src="../static/houseGif.mp4" crossorigin="anonymous" playsinline preload="auto" muted loop hidden></video>
+    <video id="video3" src="../static/sky2Gif.mp4" crossorigin="anonymous" playsinline preload="auto" muted loop hidden></video>
+  </main>
 </body>
-
 </html>
