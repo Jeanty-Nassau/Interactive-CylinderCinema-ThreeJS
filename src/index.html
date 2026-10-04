@@ -1,47 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Signal Theatre — an immersive Three.js cinema built from curved media screens, video textures and reflection.">
+  <title>Signal Theatre — Interactive Cinema</title>
+</head>
+<body>
+  <main class="study-shell">
+    <section class="study-copy">
+      <p class="eyebrow">THREE.JS STUDY / 02</p>
+      <h1>Signal <span>Theatre</span></h1>
+      <p>A cylindrical cinema built from the original project media: curved video surfaces, reflective flooring and an inside-the-room viewpoint.</p>
+      <p class="hint">Drag to look around · Scroll to change field of view.</p>
+    </section>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Signal Theatre — Three.js Study</title>
-    </head>
+    <div id="canvasContainer">
+      <canvas class="webgl" aria-label="Interactive cylindrical cinema"></canvas>
+    </div>
 
-    <body>
-        <section class="section1">
-            <div class="hero_left">
-                <h1>Signal Theatre</h1>
-                <P>Millions of developers and companies build, ship, and maintain their software
-                    on GitHub-the largest and most advanced development platform.
-                </P>
-                <div class="hero_button">
-                    <a href="">Learn More</a>
-                </div>
-            </div>
-        </section>
-        <section class="section2">
-            <p>section 2</p>
-        </section>
-        <section class="section3">
-            <p>section 3</p>
-        </section>
-        <section class="section4">
-            <p>section 4</p>
-        </section>
+    <aside class="controls-panel" aria-label="Cinema controls">
+      <strong>Controls</strong>
+      <button type="button" data-turn-left>← Screen</button>
+      <button type="button" data-reset-view>Center</button>
+      <button type="button" data-turn-right>Screen →</button>
+    </aside>
 
+    <p class="media-note">Original assets / castle · house · sky · building</p>
 
-
-
-        <video loop id="video1" src="../static/castleGif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video>
-        <video loop id="video2" src="../static/houseGif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video>
-        <video loop id="video3" src="../static/sky2Gif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video>
-        <!-- <video loop id="video4" src="../static/castleGif.mp4" crossOrigin="anonymous" playsinline style="display:none">
-        </video> -->
-        <canvas class="webgl"></canvas>
-    <aside class="study-note" aria-label="About this study"><strong>Signal Theatre</strong><span>A spatial media study exploring curved geometry, video textures, reflection and scroll-driven camera choreography.</span></aside>
+    <video loop muted id="video1" src="../static/castleGif.mp4" crossorigin="anonymous" playsinline preload="auto" style="display:none"></video>
+    <video loop muted id="video2" src="../static/houseGif.mp4" crossorigin="anonymous" playsinline preload="auto" style="display:none"></video>
+    <video loop muted id="video3" src="../static/sky2Gif.mp4" crossorigin="anonymous" playsinline preload="auto" style="display:none"></video>
+  </main>
 </body>
-
 </html>
