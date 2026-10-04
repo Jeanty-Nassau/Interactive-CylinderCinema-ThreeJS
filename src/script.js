@@ -1,338 +1,221 @@
 import './style.css'
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Reflector } from 'three/examples/jsm/objects/Reflector'
-import * as dat from 'dat.gui'
-import { vertexShader, fragmentShader } from './shaders'
-import gsap from 'gsap'
-// Debug
-const gui = new dat.GUI()
 
-// Canvas
 const canvas = document.querySelector('canvas.webgl')
+const container = document.querySelector('#canvasContainer')
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-// Scene
 const scene = new THREE.Scene()
+scene.background = new THREE.Color(0x05070b)
 
-/**
- * Object
- */
-// dynamic texture material
-let video1 = document.querySelector('#video1');
-video1.play();
-video1.defaultPlaybackRate = 0.01;
+const videos = [
+  document.querySelector('#video1'),
+  document.querySelector('#video2'),
+  document.querySelector('#video3'),
+]
 
-let video2 = document.querySelector('#video2');
-video2.play();
-video2.defaultPlaybackRate = 0.01;
-
-let video3 = document.querySelector('#video3');
-video3.play();
-video3.defaultPlaybackRate = 0.01;
-
-const vidArray = [new THREE.VideoTexture(video1), new THREE.VideoTexture(video2), new THREE.VideoTexture(video3)];
-
-//static mesh
-// const dynamicMesh = new THREE.Mesh(
-//     new THREE.PlaneBufferGeometry(2, 2, 64, 64),
-//     new THREE.MeshBasicMaterial({
-//         map: vidTexture,
-//         color: 0xffffff,
-//     })
-// )
-
-// dynamicMesh.position.set(0, 0, 0);
-// dynamicMesh.rotation.set(0, 0, 0);
-// scene.add(dynamicMesh);
-
-let vidTexture = vid => {
-    // console.log('typeOf of vid:', typeof vid);
-    // console.log('typeOf of vid === "number:"', typeof vid === 'number');
-    return (typeof vid === 'number') ? vidArray[vid] : (new THREE.TextureLoader().load('/building.jpeg'))
-};
-
-// Material
-const material = vid => new THREE.ShaderMaterial({
-    vertexShader,
-    fragmentShader,
-    side: THREE.DoubleSide,
-    uniforms: {
-        uTime: { value: 0 },
-        uTexture: { value: vidTexture(vid) },
-    },
-    transparent: true,
-    depthTest: true,
-
+videos.forEach((video) => {
+  video.muted = true
+  video.loop = true
+  video.playsInline = true
+  void video.play().catch(() => {})
 })
 
-//Meshes
-const floorTexture = new THREE.TextureLoader().load('/floorTexture.jpg');
-floorTexture.wrapS = THREE.RepeatWrapping;
-floorTexture.wrapT = THREE.RepeatWrapping;
-floorTexture.repeat.set(9, 9);
+const textureLoader = new THREE.TextureLoader()
+const buildingTexture = textureLoader.load('/building.jpeg')
+buildingTexture.encoding = THREE.sRGBEncoding
+
+const videoTextures = videos.map((video) => {
+  const texture = new THREE.VideoTexture(video)
+  texture.encoding = THREE.sRGBEncoding
+  texture.minFilter = THREE.LinearFilter
+  texture.magFilter = THREE.LinearFilter
+  return texture
+})
+
+const floorTexture = textureLoader.load('/floorTexture.jpg')
+floorTexture.encoding = THREE.sRGBEncoding
+floorTexture.wrapS = THREE.RepeatWrapping
+floorTexture.wrapT = THREE.RepeatWrapping
+floorTexture.repeat.set(9, 9)
+
+const theatre = new THREE.Group()
+scene.add(theatre)
+
+const textures = [
+  buildingTexture,
+  videoTextures[0],
+  videoTextures[1],
+  videoTextures[2],
+]
+
+const screenArc = Math.PI / 2 - 0.06
+const radius = 3.2
+const screenHeight = 2.08
+
+textures.forEach((texture, index) => {
+  const thetaStart =
+    -3 * Math.PI / 4 +
+    index * (Math.PI / 2) +
+    0.03
+
+  const screen = new THREE.Mesh(
+    new THREE.CylinderBufferGeometry(
+      radius,
+      radius,
+      screenHeight,
+      96,
+      1,
+      true,
+      thetaStart,
+      screenArc
+    ),
+    new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.BackSide,
+      toneMapped: false,
+    })
+  )
+
+  theatre.add(screen)
+})
 
 const floor = new THREE.Mesh(
-    new THREE.PlaneBufferGeometry(15, 15, 64, 64),
-    new THREE.MeshPhysicalMaterial(
-        {
-            roughness: 0.5,
-            metalness: 0.5,
-            color: 0xffffff,
-            transparent: true,
-            opacity: 0.9,
-            depthTest: false,
-            map: floorTexture,
-        }
-    )
+  new THREE.CircleBufferGeometry(3.15, 96),
+  new THREE.MeshStandardMaterial({
+    map: floorTexture,
+    color: 0x8d91a0,
+    roughness: 0.58,
+    metalness: 0.22,
+  })
 )
+floor.rotation.x = -Math.PI / 2
+floor.position.y = -1.08
+scene.add(floor)
 
-const floorMirror = new Reflector(
-    new THREE.PlaneBufferGeometry(15, 15, 64, 64),
-    {
-        color: 0xffffff,
-        textureWidth: window.innerWidth * window.devicePixelRatio,
-        textureHeight: window.innerHeight * window.devicePixelRatio,
-        // opacity: 0.1,
-        clipBias: 0.3,
-        blending: THREE.AdditiveBlending,
-
-    }
+const mirror = new Reflector(
+  new THREE.CircleBufferGeometry(3.12, 96),
+  {
+    color: 0x4c5262,
+    textureWidth: Math.min(window.innerWidth * window.devicePixelRatio, 1600),
+    textureHeight: Math.min(window.innerHeight * window.devicePixelRatio, 1600),
+    clipBias: 0.003,
+  }
 )
+mirror.rotation.x = -Math.PI / 2
+mirror.position.y = -1.07
+mirror.material.transparent = true
+mirror.material.opacity = 0.2
+scene.add(mirror)
 
-const cylinderPiece1 = new THREE.Mesh(
-    // new THREE.TorusGeometry(1, 0.4, 16, 60),
-    new THREE.CylinderBufferGeometry(2, 2, 1.3, 64, 1, true, 0, 2 * Math.PI / 4),
-    material('/building.jpeg'),
-)
-const cylinderPiece2 = new THREE.Mesh(
-    new THREE.CylinderBufferGeometry(2, 2, 1.3, 64, 2, true, 0, 2 * Math.PI / 4),
-    material(0),
-)
-const cylinderPiece3 = new THREE.Mesh(
-    new THREE.CylinderBufferGeometry(2, 2, 1.3, 64, 2, true, 0, 2 * Math.PI / 4),
-    material(1),
-)
-const cylinderPiece4 = new THREE.Mesh(
-    new THREE.CylinderBufferGeometry(2, 2, 1.3, 64, 2, true, 0, 2 * Math.PI / 4),
-    material(2),
-)
+scene.add(new THREE.AmbientLight(0xffffff, 0.18))
 
-const floorGroup = new THREE.Group();
-floorGroup.add(floor, floorMirror);
-scene.add(floorGroup)
-floorGroup.position.set(0, -0.74, 0);
-floorGroup.rotation.set(181.14, 0, 0)
+const lavenderLight = new THREE.PointLight(0xc1b5eb, 1.4, 14)
+lavenderLight.position.set(0, 2.8, 1.5)
+scene.add(lavenderLight)
 
-cylinderPiece1.position.set(0, 0, 0);
-cylinderPiece1.rotation.set(0, 0, 0);
+const cobaltLight = new THREE.PointLight(0x1847ff, 0.9, 12)
+cobaltLight.position.set(-2.5, 0.8, 1.6)
+scene.add(cobaltLight)
 
-cylinderPiece2.position.set(0, 0, 0);
-cylinderPiece2.rotation.set(0, 2 * Math.PI / 2, 0);
+const orangeLight = new THREE.PointLight(0xff991c, 0.65, 10)
+orangeLight.position.set(2.3, 0.4, 1.2)
+scene.add(orangeLight)
 
-cylinderPiece3.position.set(0, 0, 0);
-cylinderPiece3.rotation.set(0, 2 * Math.PI / 4, 0);
-
-cylinderPiece4.position.set(0, 0, 0);
-cylinderPiece4.rotation.set(0, 2 * Math.PI / -4, 0);
-
-const group = new THREE.Group();
-group.add(cylinderPiece1, cylinderPiece2, cylinderPiece3, cylinderPiece4);
-scene.add(group);
-group.position.set(0, 0, 0);
-group.rotation.set(6.78, 13.8, 0);
-
-gui.add(group.position, ('x')).min(0).max(50);
-gui.add(group.position, ('y')).min(0).max(50);
-gui.add(group.position, ('z')).min(-50).max(50);
-
-gui.add(group.rotation, ('x')).min(0).max(200);
-gui.add(group.rotation, ('y')).min(0).max(200);
-
-const guiFloor = gui.addFolder('floor');
-guiFloor.add(floorGroup.position, 'x').min(-10).max(100);
-guiFloor.add(floorGroup.position, 'y').min(-10).max(100);
-guiFloor.add(floorGroup.position, 'z').min(-10).max(100);
-guiFloor.add(floorGroup.rotation, ('x')).min(0).max(600);
-guiFloor.add(floorGroup.rotation, ('y')).min(0).max(600);
-// Lights
-
-const pointLight = new THREE.PointLight(0xC1B5EB, 2, 20, 5)
-pointLight.position.x = 0
-pointLight.position.y = 5
-pointLight.position.z = 3
-scene.add(pointLight)
-
-
-/**
- * Sizes
- */
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
-}
-
-window.addEventListener('resize', () => {
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-})
-
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.x = 0
-camera.position.y = 0
-camera.position.z = 1.5
-
+const camera = new THREE.PerspectiveCamera(68, 1, 0.1, 80)
+camera.position.set(0, 0.16, 0)
+camera.rotation.x = -0.085
 scene.add(camera)
 
-// Controls
-// const controls = new OrbitControls(camera, canvas)
-// controls.enableDamping = true
+let currentScreen = 0
+let targetRotation = 0
+let currentFov = 68
+let targetFov = 68
 
-/**
- * Renderer
- */
+const labels = ['Building', 'Castle', 'House', 'Sky']
+const screenLabel = document.querySelector('[data-screen-label]')
+
+function updateScreenLabel() {
+  if (screenLabel) {
+    screenLabel.textContent = labels[currentScreen]
+  }
+}
+
+function showScreen(next) {
+  currentScreen = (next + labels.length) % labels.length
+  targetRotation = currentScreen * (Math.PI / 2)
+  targetFov = 68
+  updateScreenLabel()
+}
+
+function zoom(delta) {
+  targetFov = THREE.MathUtils.clamp(targetFov + delta, 38, 68)
+}
+
+document.querySelector('[data-prev-screen]')?.addEventListener('click', () => {
+  showScreen(currentScreen - 1)
+})
+
+document.querySelector('[data-next-screen]')?.addEventListener('click', () => {
+  showScreen(currentScreen + 1)
+})
+
+document.querySelector('[data-zoom-in]')?.addEventListener('click', () => {
+  zoom(-4)
+})
+
+document.querySelector('[data-zoom-out]')?.addEventListener('click', () => {
+  zoom(4)
+})
+
+canvas.addEventListener(
+  'wheel',
+  (event) => {
+    event.preventDefault()
+    zoom(Math.sign(event.deltaY) * 2)
+  },
+  { passive: false }
+)
+
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
-    antialias: true,
+  canvas,
+  antialias: true,
+  powerPreference: 'high-performance',
 })
-renderer.setSize(sizes.width, sizes.height)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.outputEncoding = THREE.sRGBEncoding
 
+function resize() {
+  const width = Math.max(container.clientWidth, 1)
+  const height = Math.max(container.clientHeight, 1)
 
+  camera.aspect = width / height
+  camera.updateProjectionMatrix()
+  renderer.setSize(width, height, false)
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+}
 
+window.addEventListener('resize', resize)
+resize()
+updateScreenLabel()
 
-/**
- * Scroll
- */
-let scrollY = window.scrollY
-let currentSection = 0
+function tick() {
+  theatre.rotation.y +=
+    (targetRotation - theatre.rotation.y) * 0.075
 
-window.addEventListener('scroll', () => {
-    scrollY = window.scrollY
-    const newSection = Math.round(scrollY / sizes.height)
-    if ((newSection != currentSection) && (newSection === 0)) {
-        currentSection = newSection
-        // console.log('changed', currentSection)
-        gsap.to(
-            camera.position,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: '0',
-                y: '0',
-                z: '1.5'
-            }
-        )
-        gsap.to(
-            group.rotation,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                y: '13.2',
-            }
-        )
-    } else if ((newSection != currentSection) && (newSection === 1)) {
-        currentSection = newSection
-        // console.log('changed', currentSection)
-        gsap.to(
-            camera.position,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: '-1',
-                y: '-0.5',
-                z: '4'
-            }
-        )
-        gsap.to(
-            group.rotation,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                y: '13.2',
-            }
-        )
-    } else if ((newSection != currentSection) && (newSection === 2)) {
-        currentSection = newSection
-        // console.log('changed', currentSection)
-        gsap.to(
-            camera.position,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: '0',
-                y: '0',
-                z: '1.5'
-            }
-        )
-        gsap.to(
-            group.rotation,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                y: '16.2',
-            }
-        )
-    } else if ((newSection != currentSection) && (newSection === 3)) {
-        currentSection = newSection
-        // console.log('changed', currentSection)
-        gsap.to(
-            camera.position,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                x: '-1',
-                y: '-0.5',
-                z: '4'
-            }
-        )
-        gsap.to(
-            group.rotation,
-            {
-                duration: 1.5,
-                ease: 'power2.inOut',
-                y: '16.2',
-            }
-        )
-    }
-    console.log(newSection)
-    console.log(scrollY)
-})
+  currentFov +=
+    (targetFov - currentFov) * 0.1
 
-/**
- * Animate
- */
+  camera.fov = currentFov
+  camera.updateProjectionMatrix()
 
-const clock = new THREE.Clock()
+  if (!prefersReducedMotion) {
+    lavenderLight.intensity =
+      1.25 + Math.sin(performance.now() * 0.0007) * 0.1
+  }
 
-const tick = () => {
-
-    const elapsedTime = clock.getElapsedTime()
-    // group.rotation.y = 0.04 * elapsedTime;
-    // Update objects
-    // cylinder.rotation.y = .5 * elapsedTime
-
-    // Update Orbital Controls
-    // controls.update()
-
-    // Render
-    renderer.render(scene, camera)
-
-    // Call tick again on the next frame
-    window.requestAnimationFrame(tick)
+  renderer.render(scene, camera)
+  requestAnimationFrame(tick)
 }
 
 tick()
