@@ -1,15 +1,30 @@
 # Signal Theatre
 
-A focused Three.js creative-coding study, originally explored in 2022 and revisited in 2026 as part of a small graphics collection.
+A rotating four-screen Three.js cinema built from the original project media.
+
+The viewer sits near the middle of the room while the cinema rotates from one curved screen to the next. The latest version keeps a little space between screens, uses the original textured floor with a restrained reflection, and defaults to the widest framing so the room remains visible.
+
+## Interaction
+- Previous / next screen rotates the cinema
+- Scroll or use the controls to zoom
+- Each screen change returns to the wide default view
+
+## Original media
+- `building.jpeg`
+- `castleGif.mp4`
+- `houseGif.mp4`
+- `sky2Gif.mp4`
+- `floorTexture.jpg`
 
 ## Techniques
-- Curved geometry
-- Video textures
-- GLSL
-- Reflection
-- Scroll choreography
+- curved cylinder geometry
+- video textures
+- screen-to-screen rotation
+- reflective textured floor
+- interactive field of view
+- responsive WebGL rendering
 
-## Run locally
+## Run
 
 ```bash
 npm install
@@ -21,7 +36,3 @@ Production build:
 ```bash
 npm run build
 ```
-
-## Portfolio context
-
-This is intentionally presented as a graphics study rather than a production application. It documents early WebGL experimentation and the progression toward more deliberate creative systems work.
